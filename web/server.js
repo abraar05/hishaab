@@ -343,7 +343,7 @@ app.get('/api/reports/dashboard', (req, res) => {
   const supplierDue = sum(suppliers, (s) => s.due_balance);
   resJson(res, 200, {
     totalProducts, sales: totalSales, purchases: totalPurchases,
-    stock: { value: stockValue, saleValue: stockSaleValue }, lowStock,
+    stock: { value: stockValue, saleValue: stockSaleValue, v: stockValue, sv: stockSaleValue }, lowStock,
     totalCustomers: customers.length, totalSuppliers: suppliers.length,
     customerDue, supplierDue, netDue: num(customerDue) - num(supplierDue),
   });

@@ -52,6 +52,8 @@ class ApiBridge(private val dbHelper: DatabaseHelper) {
                 path == "/api/reports/sales-summary" -> salesSummary(db)
                 path == "/api/reports/product-movement" -> productMovement(db)
                 path == "/api/reports/dues" -> dues(db)
+                path == "/api/_export" -> exportAll(db)
+                path == "/api/_reset" -> { dbHelper.resetAll(); ok() }
                 else -> error("Unknown endpoint: $path")
             }
             db.close()
@@ -69,6 +71,15 @@ class ApiBridge(private val dbHelper: DatabaseHelper) {
     private fun oid(j: JSONObject, k: String): String? = if (j.isNull(k)) null else j.optString(k, null)
     private fun error(msg: String) = JSONObject().put("error", msg).toString()
     private fun ok() = JSONObject().put("ok", true).toString()
+
+    private fun exportAll(db: android.database.sqlite.SQLiteDatabase): String {
+        val out = JSONObject()
+        for (t in listOf("products", "customers", "suppliers", "sales", "sale_items",
+                "purchases", "purchase_items", "payments", "settings")) {
+            out.put(t, db.rawQuery("SELECT * FROM $t", null).use { toArray(it) })
+        }
+        return out.toString()
+    }
     private fun nowIso() = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.US).format(Date())
     private fun today() = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
 
@@ -130,7 +141,8 @@ class ApiBridge(private val dbHelper: DatabaseHelper) {
         val like = likeCols(j, "name", "sku", "category")
         var sql = "SELECT * FROM products"; val args = mutableListOf<String>()
         if (like != null) { sql += " WHERE ${like.first}"; args.addAll(like.second.toList()) }
-        if (j.optBoolean("lowStock", false)) sql += (if (like != null) " AND " else " WHERE ") + "min_stock > 0 AND stock <= min_stock"
+        val low = str(j, "lowStock")
+        if (low == "1" || low.equals("true", ignoreCase = true)) sql += (if (like != null) " AND " else " WHERE ") + "min_stock > 0 AND stock <= min_stock"
         sql += " ORDER BY name COLLATE NOCASE"
         return db.rawQuery(sql, args.toTypedArray()).use { toArray(it).toString() }
     }

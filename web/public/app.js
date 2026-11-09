@@ -604,15 +604,23 @@ $('#btnSaveSettings').onclick = async () => {
 
 $('#btnExport').onclick = async () => {
   try {
-    const data = {
-      products: await api('/api/products'),
-      customers: await api('/api/customers'),
-      suppliers: await api('/api/suppliers'),
-      sales: await api('/api/sales'),
-      purchases: await api('/api/purchases'),
-      payments: await api('/api/payments'),
-    };
-    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const data = window.Hishaaab
+      ? await api('/api/_export')
+      : {
+          products: await api('/api/products'),
+          customers: await api('/api/customers'),
+          suppliers: await api('/api/suppliers'),
+          sales: await api('/api/sales'),
+          purchases: await api('/api/purchases'),
+          payments: await api('/api/payments'),
+        };
+    const json = JSON.stringify(data, null, 2);
+    if (window.Hishaaab && window.Hishaaab.saveFile) {
+      window.Hishaaab.saveFile('hishaaab-export.json', json);
+      toast('Exported hishaab-export.json to Downloads');
+      return;
+    }
+    const blob = new Blob([json], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a'); a.href = url; a.download = 'hishaaab-export.json'; a.click();
   } catch (err) { toast(err.message); }
@@ -620,13 +628,27 @@ $('#btnExport').onclick = async () => {
 
 $('#btnReset').onclick = async () => {
   if (!confirm('Reset to demo data? This clears all local data.')) return;
-  // Re-seed by restarting server; here just notify
-  toast('Restart the server to reset demo data');
+  try {
+    if (window.Hishaaab) {
+      await api('/api/_reset', { method: 'POST' });
+      const active = document.querySelector('.nav-link.active')?.dataset.section || 'dashboard';
+      showSection(active);
+      toast('Demo data restored');
+    } else {
+      toast('Restart the server to reset demo data');
+    }
+  } catch (err) { toast(err.message); }
 };
 
 // ---------- DB backup/download ----------
 $('#btnDownloadDb').onclick = async () => {
   try {
+    if (window.Hishaaab && window.Hishaaab.saveFile) {
+      const data = await api('/api/_export');
+      window.Hishaaab.saveFile('hishaaab-backup.json', JSON.stringify(data, null, 2));
+      toast('Backup saved to Downloads');
+      return;
+    }
     const res = await fetch(API + '/api/_db');
     if (!res.ok) { toast('DB endpoint not available'); return; }
     const blob = await res.blob();

@@ -17,10 +17,10 @@ This repository contains the **complete full-stack app**:
 Ready-to-install APKs are in [`dist/`](dist/) and attached to the
 [Releases](../../releases) page.
 
-- `dist/Hishaaab-1.0.0-release.apk` — release build (recommended)
-- `dist/Hishaaab-1.0.0-debug.apk` — debug build
+- `dist/Hishaaab-1.0.1-release.apk` — release build (recommended)
+- `dist/Hishaaab-1.0.1-debug.apk` — debug build
 
-Package: `com.hishaaab.app` · version `1.0.0` · minSdk `24` · targetSdk `34`
+Package: `com.hishaaab.app` · version `1.0.1` · minSdk `24` · targetSdk `34`
 
 Install on a device: enable "Install unknown apps" for your file manager/browser,
 then open the `.apk`. All data is stored on-device in SQLite; nothing leaves the phone.

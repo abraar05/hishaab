@@ -113,4 +113,20 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DB_NAME, null
         }
         count.close()
     }
+
+    /** Drops every table and re-creates the schema with fresh demo data. */
+    fun resetAll() {
+        val db = writableDatabase
+        db.beginTransaction()
+        try {
+            for (t in listOf("settings", "payments", "purchase_items", "purchases",
+                    "sale_items", "sales", "suppliers", "customers", "products")) {
+                db.execSQL("DROP TABLE IF EXISTS $t")
+            }
+            db.setTransactionSuccessful()
+        } finally {
+            db.endTransaction()
+        }
+        onCreate(db)
+    }
 }
