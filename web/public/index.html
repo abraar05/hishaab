@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hishaaab - Offline Business Manager</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="app">
+  <nav class="sidebar">
+    <div class="brand">Hishaaab</div>
+    <div class="subtitle">Offline Business Manager</div>
+    <ul class="nav">
+      <li><a href="#" data-section="dashboard" class="nav-link active"><span class="icon">&#128202;</span> Dashboard</a></li>
+      <li><a href="#" data-section="products" class="nav-link"><span class="icon">&#128213;</span> Products</a></li>
+      <li><a href="#" data-section="sales" class="nav-link"><span class="icon">&#128727;</span> Sales Book</a></li>
+      <li><a href="#" data-section="purchases" class="nav-link"><span class="icon">&#128728;</span> Purchase Book</a></li>
+      <li><a href="#" data-section="parties" class="nav-link"><span class="icon">&#128101;</span> Customers &amp; Suppliers</a></li>
+      <li><a href="#" data-section="dues" class="nav-link"><span class="icon">&#128177;</span> Dues / Payments</a></li>
+      <li><a href="#" data-section="reports" class="nav-link"><span class="icon">&#128200;</span> Reports</a></li>
+      <li class="divider"></li>
+      <li><a href="#" data-section="settings" class="nav-link"><span class="icon">&#128271;</span> Settings</a></li>
+    </ul>
+    <div class="footer">v1.0.0 &bull; Local data only</div>
+  </nav>
+
+  <main class="content">
+    <header class="topbar">
+      <button class="menu-toggle" id="menuToggle">&#9776;</button>
+      <h1 id="pageTitle">Dashboard</h1>
+      <div class="top-right">
+        <button class="btn btn-outline" id="btnExport">Export JSON</button>
+        <button class="btn btn-primary" id="btnReset">Reset Demo Data</button>
+      </div>
+    </header>
+
+    <section class="section" id="section-dashboard">
+      <div class="grid grid-4">
+        <div class="card stat">
+          <div class="stat-label">Total Products</div>
+          <div class="stat-value" id="stat-products">-</div>
+        </div>
+        <div class="card stat">
+          <div class="stat-label">Total Sales</div>
+          <div class="stat-value" id="stat-sales">-</div>
+        </div>
+        <div class="card stat">
+          <div class="stat-label">Total Purchases</div>
+          <div class="stat-value" id="stat-purchases">-</div>
+        </div>
+        <div class="card stat">
+          <div class="stat-label">Net Dues</div>
+          <div class="stat-value" id="stat-dues">-</div>
+        </div>
+        <div class="card stat">
+          <div class="stat-label">Stock Value</div>
+          <div class="stat-value" id="stat-stock">-</div>
+        </div>
+        <div class="card stat">
+          <div class="stat-label">Low Stock Items</div>
+          <div class="stat-value" id="stat-lowstock">-</div>
+        </div>
+        <div class="card stat">
+          <div class="stat-label">Customers</div>
+          <div class="stat-value" id="stat-customers">-</div>
+        </div>
+        <div class="card stat">
+          <div class="stat-label">Suppliers</div>
+          <div class="stat-value" id="stat-suppliers">-</div>
+        </div>
+      </div>
+      <div class="grid grid-2" style="margin-top:16px">
+        <div class="card">
+          <div class="card-header">Recent Sales</div>
+          <div class="table-wrap" id="recent-sales-wrap"><div class="empty">No sales yet</div></div>
+        </div>
+        <div class="card">
+          <div class="card-header">Recent Purchases</div>
+          <div class="table-wrap" id="recent-purchases-wrap"><div class="empty">No purchases yet</div></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section hidden" id="section-products">
+      <div class="card-header-row">
+        <h2>Products</h2>
+        <button class="btn btn-primary" id="btnAddProduct">&#10133; Add Product</button>
+      </div>
+      <div class="filter-row">
+        <input type="text" id="prodSearch" placeholder="Search product / sku / category">
+        <label style="margin-left:12px;cursor:pointer"><input type="checkbox" id="prodLowStock"> Low stock only</label>
+        <button class="btn btn-outline" id="btnClearProd">Clear</button>
+      </div>
+      <div class="table-wrap">
+        <table id="productsTable">
+          <thead><tr><th>Product</th><th>SKU</th><th>Category</th><th>Purchase</th><th>Sale</th><th>Stock</th><th>Unit</th><th>Min</th><th>Status</th><th>Actions</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <div class="modal hidden" id="productModal">
+        <div class="modal-backdrop" id="productBackdrop"></div>
+        <div class="modal-panel">
+          <div class="modal-header"><h3 id="productModalTitle">Add Product</h3><button class="btn-close" id="btnCloseProduct">&#215;</button></div>
+          <form id="productForm">
+            <input type="hidden" id="productId">
+            <div class="form-row"><label>Name <span class="req">*</span></label><input type="text" id="pName" required></div>
+            <div class="form-row"><label>SKU</label><input type="text" id="pSku"></div>
+            <div class="form-row"><label>Category</label><input type="text" id="pCategory"></div>
+            <div class="form-row"><label>Purchase Price</label><input type="number" step="0.01" id="pPurchasePrice" min="0"></div>
+            <div class="form-row"><label>Sale Price</label><input type="number" step="0.01" id="pSalePrice" min="0"></div>
+            <div class="form-row"><label>Stock</label><input type="number" step="0.01" id="pStock" min="0"></div>
+            <div class="form-row"><label>Unit</label><select id="pUnit"><option>pcs</option><option>kg</option><option>L</option><option>box</option><option>dozen</option></select></div>
+            <div class="form-row"><label>Min Stock</label><input type="number" step="0.01" id="pMinStock" min="0"></div>
+            <div class="form-row"><label>Description</label><textarea id="pDescription"></textarea></div>
+            <div class="form-actions"><button class="btn btn-outline" type="button" id="btnCancelProduct">Cancel</button><button class="btn btn-primary" type="submit">Save</button></div>
+          </form>
+        </div>
+      </div>
+    </section>
+
+    <section class="section hidden" id="section-sales">
+      <div class="card-header-row">
+        <h2>Sales Book</h2>
+        <button class="btn btn-primary" id="btnAddSale">&#10133; New Sale</button>
+      </div>
+      <div class="filter-row">
+        <input type="text" id="saleSearch" placeholder="Search invoice / customer">
+        <label style="margin-left:10px">From</label><input type="date" id="saleFrom">
+        <label style="margin-left:10px">To</label><input type="date" id="saleTo">
+        <button class="btn btn-outline" id="btnClearSale">Clear</button>
+      </div>
+      <div class="table-wrap">
+        <table id="salesTable">
+          <thead><tr><th>Invoice</th><th>Customer</th><th>Date</th><th>Total</th><th>Paid</th><th>Due</th><th>Status</th><th>Actions</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <div class="modal hidden" id="saleModal">
+        <div class="modal-backdrop" id="saleBackdrop"></div>
+        <div class="modal-panel wide">
+          <div class="modal-header"><h3 id="saleModalTitle">New Sale</h3><button class="btn-close" id="btnCloseSale">&#215;</button></div>
+          <form id="saleForm">
+            <input type="hidden" id="saleId">
+            <div class="form-row" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+              <div><label>Customer <span class="req">*</span></label><select id="saleCustomer" required></select></div>
+              <div><label>Date</label><input type="date" id="saleDate" required></div>
+            </div>
+            <div class="form-row"><label>Customer Name</label><input type="text" id="saleCustomerName"></div>
+            <h4 style="margin:10px 0 6px;">Items</h4>
+            <div class="table-wrap" style="max-height:300px">
+              <table id="saleItemsTable">
+                <thead><tr><th>Product</th><th>Qty</th><th>Price</th><th>Total</th><th>Action</th></tr></thead>
+                <tbody></tbody>
+              </table>
+            </div>
+            <div class="form-row" style="display:flex;gap:8px;align-items:center;">
+              <label style="margin:0">Product</label>
+              <select id="saleItemProduct" style="flex:1"></select>
+              <label style="margin:0;margin-left:8px">Qty</label>
+              <input type="number" step="0.01" id="saleItemQty" value="1" style="width:90px">
+              <button class="btn btn-outline" type="button" id="btnAddSaleItem">Add</button>
+            </div>
+            <div class="form-row" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;">
+              <div><label>Subtotal</label><input type="number" step="0.01" id="saleSubtotal" readonly></div>
+              <div><label>Discount</label><input type="number" step="0.01" id="saleDiscount" value="0"></div>
+              <div><label>Tax</label><input type="number" step="0.01" id="saleTax" value="0"></div>
+            </div>
+            <div class="form-row" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+              <div><label>Total</label><input type="number" step="0.01" id="saleTotal" readonly></div>
+              <div><label>Paid</label><input type="number" step="0.01" id="salePaid" value="0"></div>
+            </div>
+            <div class="form-row"><label>Notes</label><textarea id="saleNotes"></textarea></div>
+            <div class="form-actions"><button class="btn btn-outline" type="button" id="btnCancelSale">Cancel</button><button class="btn btn-primary" type="submit">Save Sale</button></div>
+          </form>
+        </div>
+      </div>
+    </section>
+
+    <section class="section hidden" id="section-purchases">
+      <div class="card-header-row">
+        <h2>Purchase Book</h2>
+        <button class="btn btn-primary" id="btnAddPurchase">&#10133; New Purchase</button>
+      </div>
+      <div class="filter-row">
+        <input type="text" id="purchaseSearch" placeholder="Search invoice / supplier">
+        <label style="margin-left:10px">From</label><input type="date" id="purchaseFrom">
+        <label style="margin-left:10px">To</label><input type="date" id="purchaseTo">
+        <button class="btn btn-outline" id="btnClearPurchase">Clear</button>
+      </div>
+      <div class="table-wrap">
+        <table id="purchasesTable">
+          <thead><tr><th>Invoice</th><th>Supplier</th><th>Date</th><th>Total</th><th>Paid</th><th>Due</th><th>Status</th><th>Actions</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <div class="modal hidden" id="purchaseModal">
+        <div class="modal-backdrop" id="purchaseBackdrop"></div>
+        <div class="modal-panel wide">
+          <div class="modal-header"><h3 id="purchaseModalTitle">New Purchase</h3><button class="btn-close" id="btnClosePurchase">&#215;</button></div>
+          <form id="purchaseForm">
+            <input type="hidden" id="purchaseId">
+            <div class="form-row" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+              <div><label>Supplier <span class="req">*</span></label><select id="purchaseSupplier" required></select></div>
+              <div><label>Date</label><input type="date" id="purchaseDate" required></div>
+            </div>
+            <div class="form-row"><label>Supplier Name</label><input type="text" id="purchaseSupplierName"></div>
+            <h4 style="margin:10px 0 6px;">Items</h4>
+            <div class="table-wrap" style="max-height:300px">
+              <table id="purchaseItemsTable">
+                <thead><tr><th>Product</th><th>Qty</th><th>Price</th><th>Total</th><th>Action</th></tr></thead>
+                <tbody></tbody>
+              </table>
+            </div>
+            <div class="form-row" style="display:flex;gap:8px;align-items:center;">
+              <label style="margin:0">Product</label>
+              <select id="purchaseItemProduct" style="flex:1"></select>
+              <label style="margin:0;margin-left:8px">Qty</label>
+              <input type="number" step="0.01" id="purchaseItemQty" value="1" style="width:90px">
+              <button class="btn btn-outline" type="button" id="btnAddPurchaseItem">Add</button>
+            </div>
+            <div class="form-row" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;">
+              <div><label>Subtotal</label><input type="number" step="0.01" id="purchaseSubtotal" readonly></div>
+              <div><label>Discount</label><input type="number" step="0.01" id="purchaseDiscount" value="0"></div>
+              <div><label>Tax</label><input type="number" step="0.01" id="purchaseTax" value="0"></div>
+            </div>
+            <div class="form-row" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+              <div><label>Total</label><input type="number" step="0.01" id="purchaseTotal" readonly></div>
+              <div><label>Paid</label><input type="number" step="0.01" id="purchasePaid" value="0"></div>
+            </div>
+            <div class="form-row"><label>Notes</label><textarea id="purchaseNotes"></textarea></div>
+            <div class="form-actions"><button class="btn btn-outline" type="button" id="btnCancelPurchase">Cancel</button><button class="btn btn-primary" type="submit">Save Purchase</button></div>
+          </form>
+        </div>
+      </div>
+    </section>
+
+    <section class="section hidden" id="section-parties">
+      <div class="card-header-row">
+        <h2>Customers &amp; Suppliers</h2>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-primary" id="btnAddCustomer">&#10133; Add Customer</button>
+          <button class="btn btn-primary" id="btnAddSupplier">&#10133; Add Supplier</button>
+        </div>
+      </div>
+      <div class="grid grid-2">
+        <div class="card">
+          <div class="card-header">Customers</div>
+          <div class="table-wrap">
+            <table id="customersTable">
+              <thead><tr><th>Name</th><th>Phone</th><th>Address</th><th>Due</th><th>Actions</th></tr></thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header">Suppliers</div>
+          <div class="table-wrap">
+            <table id="suppliersTable">
+              <thead><tr><th>Name</th><th>Phone</th><th>Address</th><th>Due</th><th>Actions</th></tr></thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+      <div class="modal hidden" id="partyModal">
+        <div class="modal-backdrop" id="partyBackdrop"></div>
+        <div class="modal-panel">
+          <div class="modal-header"><h3 id="partyModalTitle">Add Party</h3><button class="btn-close" id="btnCloseParty">&#215;</button></div>
+          <form id="partyForm">
+            <input type="hidden" id="partyId">
+            <input type="hidden" id="partyType">
+            <div class="form-row"><label>Name <span class="req">*</span></label><input type="text" id="partyName" required></div>
+            <div class="form-row"><label>Phone</label><input type="text" id="partyPhone"></div>
+            <div class="form-row"><label>Address</label><input type="text" id="partyAddress"></div>
+            <div class="form-row"><label>Opening Due</label><input type="number" step="0.01" id="partyDue" min="0" value="0"></div>
+            <div class="form-actions"><button class="btn btn-outline" type="button" id="btnCancelParty">Cancel</button><button class="btn btn-primary" type="submit">Save</button></div>
+          </form>
+        </div>
+      </div>
+    </section>
+
+    <section class="section hidden" id="section-dues">
+      <div class="card-header-row">
+        <h2>Dues / Payments</h2>
+        <button class="btn btn-primary" id="btnAddPayment">&#10133; Record Payment</button>
+      </div>
+      <div class="grid grid-2">
+        <div class="card">
+          <div class="card-header">Customer Dues (money to collect)</div>
+          <div class="table-wrap">
+            <table id="duesCustomersTable">
+              <thead><tr><th>Customer</th><th>Phone</th><th>Due</th><th>Action</th></tr></thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header">Supplier Dues (money to pay)</div>
+          <div class="table-wrap">
+            <table id="duesSuppliersTable">
+              <thead><tr><th>Supplier</th><th>Phone</th><th>Due</th><th>Action</th></tr></thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header">Payment History</div>
+        <div class="table-wrap">
+          <table id="paymentsTable">
+            <thead><tr><th>Date</th><th>Type</th><th>Party</th><th>Amount</th><th>Mode</th><th>Note</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="modal hidden" id="paymentModal">
+        <div class="modal-backdrop" id="paymentBackdrop"></div>
+        <div class="modal-panel">
+          <div class="modal-header"><h3 id="paymentModalTitle">Record Payment</h3><button class="btn-close" id="btnClosePayment">&#215;</button></div>
+          <form id="paymentForm">
+            <input type="hidden" id="paymentId">
+            <div class="form-row"><label>Type <span class="req">*</span></label><select id="paymentType" required><option value="received">Received (from customer)</option><option value="paid">Paid (to supplier)</option></select></div>
+            <div class="form-row"><label>Party Type <span class="req">*</span></label><select id="paymentPartyType" required><option value="customer">Customer</option><option value="supplier">Supplier</option></select></div>
+            <div class="form-row"><label>Party <span class="req">*</span></label><select id="paymentParty" required></select></div>
+            <div class="form-row"><label>Amount <span class="req">*</span></label><input type="number" step="0.01" id="paymentAmount" min="0" required></div>
+            <div class="form-row"><label>Date</label><input type="date" id="paymentDate" required></div>
+            <div class="form-row"><label>Mode</label><input type="text" id="paymentMode" placeholder="Cash / bKash / Bank"></div>
+            <div class="form-row"><label>Note</label><textarea id="paymentNote"></textarea></div>
+            <div class="form-actions"><button class="btn btn-outline" type="button" id="btnCancelPayment">Cancel</button><button class="btn btn-primary" type="submit">Save</button></div>
+          </form>
+        </div>
+      </div>
+    </section>
+
+    <section class="section hidden" id="section-reports">
+      <div class="card-header-row">
+        <h2>Reports</h2>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-outline" id="btnRefreshReports">Refresh</button>
+          <button class="btn btn-outline" id="btnExportReports">Export</button>
+        </div>
+      </div>
+      <div class="grid grid-3" style="margin-top:12px">
+        <div class="card">
+          <div class="card-header">Daily Sales</div>
+          <div class="table-wrap">
+            <table id="reportSalesTable">
+              <thead><tr><th>Date</th><th>Count</th><th>Total</th><th>Due</th></tr></thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header">Product Movement</div>
+          <div class="table-wrap">
+            <table id="reportProductTable">
+              <thead><tr><th>Product</th><th>Stock</th><th>Sold</th><th>Revenue</th><th>Bought</th></tr></thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header">All Dues</div>
+          <div class="table-wrap">
+            <table id="reportDuesTable">
+              <thead><tr><th>Party</th><th>Type</th><th>Due</th></tr></thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section hidden" id="section-settings">
+      <div class="card-header-row"><h2>Settings</h2></div>
+      <div class="card">
+        <div class="card-header">App Info</div>
+        <div class="form-row"><label>Shop Name</label><input type="text" id="settingShopName" placeholder="Hishaaab"></div>
+        <div class="form-row"><label>Currency</label><input type="text" id="settingCurrency" value="BDT"></div>
+        <div class="form-actions"><button class="btn btn-primary" id="btnSaveSettings">Save</button></div>
+      </div>
+      <div class="card">
+        <div class="card-header">Database</div>
+        <p style="color:#666">All data is stored locally in <code>hishaaab.db</code> next to this app. No internet required.</p>
+        <div class="form-actions">
+          <button class="btn btn-outline" id="btnDownloadDb">Download DB Backup</button>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<div id="toast"></div>
+<script src="app.js"></script>
+</body>
+</html>
